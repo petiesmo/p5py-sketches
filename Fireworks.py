@@ -9,12 +9,10 @@ def polar2rect(r,th,deg=False):
 	th = th*PI/180 if deg else th
 	return (r*cos(th), r*sin(th))
 
-class myVector(Vector):
-	def __init__(self,x,y,z=0):
-		super().__init__(0,1)
-		
-	def.set_mag_dir(m,d,deg=False):
-		self.x,self.y = polar2rect(m,d,deg)
+class mdVector(Vector):
+	def __init__(self,m,d,deg=False):
+		x,y = polar2rect(m,d,deg)
+		super().__init__(x,y)
 
 class Particle():
     def __init__(self,p,v,a,e=False):
@@ -23,10 +21,13 @@ class Particle():
         self.acc = Vector(*a)
         self.color = (255*random_uniform(), 255*random_uniform(), 255*random_uniform())
 		self.exploded = e
+		self.children = []
 		return None
 
     def update(self):
-        self.vel += self.acc
+		for c in self.children:
+			 
+		self.vel += self.acc
         self.pos += self.vel
         return None
 
@@ -34,6 +35,7 @@ class Particle():
         stroke(255)
         fill(*self.color)
         circle(self.pos,size)
+		[circle(i.pos,4) for i in self.children]
         return None
 
 	def explode(self,n):
@@ -41,10 +43,14 @@ class Particle():
 		self.exploded = True
 		self.children = []
 		for i in range n:
-			vfire = myVector(1,0).set_mag_dir(1, 5*i, True)
-			adrag = -Cd*vfire**
-			# New Particles also get radial velocity, and some drag(neg radial acc)
-			self.children.append(Particle(self.pos, self.vel+vfire, self.acc+adrag,True))
+			# New Particles get radial velocity, and some drag (neg radial acc)
+			vfire = mdVector(10, 5*i, True)
+			self.children.append(Particle(self.pos, self.vel+vfire, self.acc+self.drag(vfire),True))
+		return None
+
+		def drag(self, v):
+			return mdVector(v.magnitude**2, v.direction+180,True)
+#End Particle class
 		
 
 def setup():
