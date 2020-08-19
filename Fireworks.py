@@ -22,12 +22,12 @@ class Particle():
         self.vel = Vector(*v)
         self.acc = Vector(*a)
         self.color = (ri(0,255), ri(0,255), ri(0,255))
-		self.exploded = ex
-		return None
+        self.exploded = ex
+        return None
 
     def update(self):
-		self.acc = G + self.drag()
-		self.vel += self.acc
+        self.acc = G + self.drag()
+        self.vel += self.acc
         self.pos += self.vel
         return None
 
@@ -37,54 +37,58 @@ class Particle():
         circle(self.pos,size)
         return None
 
-	def explode(self,n):
-		#Make list of new particles, with state = parent
-		self.exploded = True
-		children = []
-		for i in range(n):
-			# New Particles get radial velocity, and some drag (neg radial acc)
-			vfire = mdVector(10, 5*i, True)
-			children.append(Particle(self.pos, self.vel+vfire, G+self.drag(),True))
-		return children
+    def explode(self,n):
+        #Make list of new particles, with state = parent
+        self.exploded = True
+        children = []
+        for i in range(n):
+                # New Particles get radial velocity, and some drag (neg radial acc)
+                vfire = mdVector(10, 5*i, True)
+                children.append(Particle(self.pos, self.vel+vfire, G+self.drag(),True))
+        return children
 
-		def drag(self):
-			return mdVector(self.vel.magnitude**2, self.vel.direction+180,True)
+    def drag(self):
+        Cd = .01
+        return mdVector(Cd*self.vel.magnitude**2, self.vel.angle+PI,False)
 			
 #End Particle class
 		
 
 def setup():
     global G,particles,hzn
-    size(1000,1500)
+    size(500,750)
     title('Fireworks')
     hzn = height*2/3
-    particles = [Particle((rr(width),hzn),(rr(-3,3),rr(-23,17)),G) for i in range(7)]
+    particles = [Particle((rr(width),hzn),(rr(-3,3),rr(-22,-18)),G) for i in range(2)]
     return None
 
 def draw():
-    global G, particles,hzn
+    global G, particles, hzn
 	# New particles appear randomly
-    if random_uniform() < 0.1:
-        particles.append(Particle((rr(width),hzn),(0,-20),G))
+    #if random_uniform() < 0.1:
+    #    particles.append(Particle((rr(width),hzn),(0,-20),G))
 
     background(0)
     stroke(255)
     line((0,hzn),(width,hzn))
-	temp = []
+    temp = []
     for p in particles:
         # New pos, vel, acc
-		p.update()
+        p.update()
         # Boom!
-		if p.vel.y > 0 and not p.exploded
-            temp.extend(p.explode(20))# Burst of new particles
-		# Die off
+        #if p.vel.y > 0 and not p.exploded:
+        #    temp.extend(p.explode(20))# Burst of new particles
+	# Die off
         if p.pos.y > 3*height/4:
             particles.remove(p)
 	# Display all points
-	particles.extend(temp)
-	(p.show() for p in particles)
+    particles.extend(temp)
+    for p in particles:
+            p.show(15)
     return None
 
     
 if __name__=='__main__':
-	run()
+	run(frame_rate = 5)
+
+	
