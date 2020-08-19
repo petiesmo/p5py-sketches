@@ -5,6 +5,7 @@ from random import randrange as rr
 G = Vector(0,0.25)
 particles = None
 hzn = None
+render_ratio = 3
 
 def polar2rect(r,th,deg=False):
 	'''Conv 2d polar coords to x,y'''
@@ -17,11 +18,11 @@ class mdVector(Vector):
 		super().__init__(x,y)
 
 class Particle():
-    def __init__(self,p,v,a,ex=False):
+    def __init__(self,p,v,a,c=None,ex=False):
         self.pos = Vector(*p)
         self.vel = Vector(*v)
         self.acc = Vector(*a)
-        self.color = (ri(0,255), ri(0,255), ri(0,255))
+        self.color = c if c is not None else (ri(0,255), ri(0,255), ri(0,255))
         self.exploded = ex
         return None
 
@@ -43,12 +44,12 @@ class Particle():
         children = []
         for i in range(n):
                 # New Particles get radial velocity, and some drag (neg radial acc)
-                vfire = mdVector(10, 5*i, True)
-                children.append(Particle(self.pos, self.vel+vfire, G+self.drag(),True))
+                vfire = mdVector(ri(5,10), -20*i, True)
+                children.append(Particle(self.pos, self.vel+vfire, G+self.drag(), self.color, True))
         return children
 
     def drag(self):
-        Cd = .01
+        Cd = .0015
         return mdVector(Cd*self.vel.magnitude**2, self.vel.angle+PI,False)
 			
 #End Particle class
@@ -56,39 +57,40 @@ class Particle():
 
 def setup():
     global G,particles,hzn
-    size(500,750)
+    size(1000,1500)
     title('Fireworks')
     hzn = height*2/3
-    particles = [Particle((rr(width),hzn),(rr(-3,3),rr(-22,-18)),G) for i in range(2)]
+    particles = [Particle((rr(width),hzn),(rr(-3,3),rr(-20,-15)),G) for i in range(3)]
     return None
 
 def draw():
-    global G, particles, hzn
+    global G, particles, hzn, render_ratio
 	# New particles appear randomly
-    #if random_uniform() < 0.1:
-    #    particles.append(Particle((rr(width),hzn),(0,-20),G))
+    if random_uniform() < 0.1:
+        particles.append(Particle((rr(width),hzn),(rr(-3,3),rr(-30,-20)),G))
 
     background(0)
     stroke(255)
     line((0,hzn),(width,hzn))
     temp = []
+    for r in range(render_ratio):
+            for p in particles:
+                # New pos, vel, acc
+                p.update()
+                # Boom!
+                if p.vel.y > 0 and not p.exploded:
+                    temp.extend(p.explode(30))# Burst of new particles
+                # Die off
+                if p.pos.y > 3*height/4:
+                    particles.remove(p)
+                # Display all points
+            particles.extend(temp)
     for p in particles:
-        # New pos, vel, acc
-        p.update()
-        # Boom!
-        #if p.vel.y > 0 and not p.exploded:
-        #    temp.extend(p.explode(20))# Burst of new particles
-	# Die off
-        if p.pos.y > 3*height/4:
-            particles.remove(p)
-	# Display all points
-    particles.extend(temp)
-    for p in particles:
-            p.show(15)
+            p.show(6)
     return None
 
     
 if __name__=='__main__':
-	run(frame_rate = 5)
+	run(frame_rate = 60/render_ratio)
 
 	
