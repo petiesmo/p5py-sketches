@@ -1,6 +1,7 @@
 from p5 import *
 from random import randint as ri
 from random import randrange as rr
+from random import choice as rc
 
 G = Vector(0,0.25)
 particles = None
@@ -27,7 +28,7 @@ class Particle():
         return None
 
     def update(self):
-        self.acc = G + self.drag()
+        self.acc = G #+ self.drag()
         self.vel += self.acc
         self.pos += self.vel
         return None
@@ -44,7 +45,7 @@ class Particle():
         children = []
         for i in range(n):
                 # New Particles get radial velocity, and some drag (neg radial acc)
-                vfire = mdVector(ri(5,10), -20*i, True)
+                vfire = mdVector(rc([5,7,9]), -20*i, True)
                 children.append(Particle(self.pos, self.vel+vfire, G+self.drag(), self.color, True))
         return children
 
@@ -83,9 +84,10 @@ def draw():
                 # Die off
                 if p.pos.y > 3*height/4:
                     particles.remove(p)
-                # Display all points
+            # Add any new particles to the main array
             particles.extend(temp)
     for p in particles:
+            # Display all points
             p.show(6)
     return None
 
