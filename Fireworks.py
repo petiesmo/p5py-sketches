@@ -19,12 +19,18 @@ class mdVector(Vector):
 		super().__init__(x,y)
 
 class Particle():
-    def __init__(self,p,v,a,c=None,ex=False):
+    def __init__(self,p,v,a,rgb=None,exp=False,numch=25):
         self.pos = Vector(*p)
         self.vel = Vector(*v)
         self.acc = Vector(*a)
-        self.color = c if c is not None else (ri(0,255), ri(0,255), ri(0,255))
-        self.exploded = ex
+        self.color = rgb if rgb is not None else (ri(0,255), ri(0,255), ri(0,255))
+        self.exploded = exp
+        if int(numch) > 0:
+	        self.children = []
+	        for i in range(numch):
+	        # New Particles get radial velocity, and some drag (neg radial acc)
+		        vfire = mdVector(rc([5,7,9]), ri(0,359), True)
+	            self.children.append(Particle(self.pos, vfire, G, rgb=self.color, exp=False, numch=0))
         return None
 
     def update(self):
@@ -34,24 +40,26 @@ class Particle():
         return None
 
     def show(self, size=3):
-        stroke(255)
+        no_stroke()
         fill(*self.color)
         circle(self.pos,size)
+        if self.exploded:
+	        (ch.show(3) for ch in self.children)
         return None
 
     def explode(self,n):
         #Make list of new particles, with state = parent
         self.exploded = True
-        children = []
-        for i in range(n):
-                # New Particles get radial velocity, and some drag (neg radial acc)
-                vfire = mdVector(rc([5,7,9]), -20*i, True)
-                children.append(Particle(self.pos, self.vel+vfire, G+self.drag(), self.color, True))
-        return children
+        # Assign parent velocity and position to Particles get radial velocity
+	    for c in self.children:
+	        c.pos += self.pos
+	        c.vel += self.vel
+        return None
 
+    @property
     def drag(self):
         Cd = .0015
-        return mdVector(Cd*self.vel.magnitude**2, self.vel.angle+PI,False)
+        return mdVector(Cd*self.vel.magnitude**2, self.vel.angle+PI, False)
 			
 #End Particle class
 		
